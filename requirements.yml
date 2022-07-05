@@ -1,0 +1,18 @@
+---
+collections:
+  - name: https://github.com/theforeman/foreman-ansible-modules.git
+    type: git
+    version: develop
+
+  - name: https://github.com/theforeman/foreman-operations-collection.git
+    type: git
+    version: develop
+
+
+  - name: https://github.com/RedHatSatellite/satellite-operations-collection.git
+    type: git
+    version: master
+
+  - name: https://github.com/RedHatSatellite/satellite-ansible-collection.git
+    type: git
+    version: develop

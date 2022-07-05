@@ -1,0 +1,71 @@
+---
+#
+# https://github.com/theforeman/foreman-operations-collection
+# https://github.com/theforeman/foreman-ansible-modules
+#
+- name: Foreman Installer Playbook here
+  hosts: foreman01
+
+  # Setting which collections will be used/loaded
+  collections:
+    - theforeman.foreman
+    - theforeman.operations
+
+  vars:
+   # Foreman Information
+    sat_user: "admin"
+    sat_pass: "redhat"
+    sat_org: "ACME"
+    def_scenario: "foreman"
+
+ 
+  tasks:
+#    - name: checking some variables
+#      ansible.builtin.debug:
+#        var: ansible_facts
+
+    # Some standard operations to disable firewall
+    - name: Disabling and Stopping firewalld
+      systemd:
+        name: firewalld
+        state: stopped
+        enabled: no
+
+    # Adding a local entry
+    - name: Adding the entry to /etc/hosts
+      lineinfile:
+        path: /etc/hosts
+        line: "{{ inventory_hostname }} {{ ansible_facts['fqdn'] }} {{ ansible_facts['hostname'] }}"
+
+    # Adding the puppet repo, required for the installation
+    - name: Installing Puppet Repository
+      yum:
+        name: https://yum.puppet.com/puppet7-release-el-7.noarch.rpm
+        state: present
+
+    # Adding some additional required repos as well
+    - name: Installing Required Packages, EPEL and SCL
+      yum:
+        name: epel-release,centos-release-scl-rh
+        state: present
+
+    # Installing the foreman repo
+    - name: Installing Foreman Repository
+      yum:
+        name: https://yum.theforeman.org/releases/3.3/el7/x86_64/foreman-release.rpm
+        state: present
+
+    # Installing the foreman-installer package
+    - name: Installing Foreman Package
+      yum:
+        name: foreman-installer
+        state: present
+
+    # Calling the installer in fact, using the collection
+    - import_role:
+        name: theforeman.operations.installer
+      vars:
+        foreman_installer_scenario: "{{ def_scenario }}"
+        foreman_installer_options:
+          - '--foreman-initial-organization "{{ sat_org }}"'
+          - '--foreman-initial-admin-password {{ sat_pass }}'
