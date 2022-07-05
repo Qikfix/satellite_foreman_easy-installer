@@ -143,7 +143,7 @@ Ok, at this moment, the server that will be pushing all the packages and command
 
 - Run the playbook
 
-    You can call the playbook passing some parameters, in this case, the only parameter that we are using here it's the server reference.
+    You can call the playbook passing some parameters via `-e` flag, in this case, we are not passing it.
     ```
     # ansible-playbook -i inventory.yml foreman.yml
     ```
@@ -158,3 +158,5 @@ Ok, at this moment, the server that will be pushing all the packages and command
     PLAY RECAP **********************************************************************************************************
     10.10.10.10                : ok=12   changed=1    unreachable=0    failed=0    skipped=2    rescued=0    ignored=0
     ```
+
+    Once you get this output, you should be able to access your server via `https://10.10.10.10` and be able to authenticate in your fresh Foreman server.
