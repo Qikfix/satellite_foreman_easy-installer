@@ -1,0 +1,164 @@
+---
+#
+# https://github.com/RedHatSatellite/satellite-operations-collection
+# https://github.com/RedHatSatellite/satellite-ansible-collection
+#
+- name: Satellite Installer Playbook here
+  hosts: satellite01
+  collections:
+    - redhat.satellite_operations
+    - redhat.satellite
+
+  vars:
+   # RHSM Credentials
+    rhsm_username: "your_portal_username_here"
+    rhsm_password: "your_portal_password_here"
+
+   # Satellite Information
+    sat_user: "admin"
+    sat_pass: "redhat"
+    sat_org: "ACME"
+    def_scenario: "satellite"
+
+
+ 
+  tasks:
+#    - name: checking some variables
+#      ansible.builtin.debug:
+#        var: ansible_facts
+
+
+    # Firewall
+    - name: Disabling and Stopping firewalld
+      systemd:
+        name: firewalld
+        state: stopped
+        enabled: no
+
+    # Local Name Resolution
+    - name: Adding the entry to /etc/hosts
+      lineinfile:
+        path: /etc/hosts
+        line: "{{ inventory_hostname }} {{ ansible_facts['fqdn'] }} {{ ansible_facts['hostname'] }}"
+
+    # Manifest File
+    - name: Copying the manifest
+      copy:
+        src: manifest.zip
+        dest: /root/manifest.zip
+
+    # Removing the katello-ca-consumer package, in case it is still around
+    - name: Removing the katello-ca-consumer package
+      yum:
+        name: 'katello-ca-consumer*'
+        state: absent
+
+    # Cleaning the subsman cache
+    - name: Subscription-manager clean
+      command: subscription-manager clean
+
+    # Register to RHSM
+    - name: Register to RHSM
+      redhat_subscription:
+        state: present
+        username: "{{ rhsm_username }}"
+        password: "{{ rhsm_password }}"
+        force_register: yes
+
+    # Attaching the Employee Subscription
+    - name: Attach the correct entitlement
+      shell: |
+        pool_id=$(subscription-manager list --all --available --matches="Employee SKU" | grep Pool | head -n1 | awk '{print $3}') && subscription-manager attach --pool $pool_id
+
+    # Repositories
+    - name: Disabling all the repos
+      rhsm_repository:
+        name: '*'
+        state: disabled
+
+    - name: Enabling the Satellite repos
+      rhsm_repository:
+        name: rhel-7-server-rpms,rhel-7-server-satellite-6.10-rpms,rhel-7-server-satellite-maintenance-6-rpms,rhel-server-rhscl-7-rpms,rhel-7-server-ansible-2.9-rpms
+        state: enabled
+
+    # Packages
+    - name: Installing Satellite Package
+      yum:
+        name: satellite
+        state: present
+
+    # Calling the installer
+    - import_role:
+        name: redhat.satellite_operations.installer
+      vars:
+        satellite_installer_scenario: "{{ def_scenario }}"
+        satellite_installer_options:
+          - '--foreman-initial-organization "{{ sat_org }}"'
+          - '--foreman-initial-admin-password {{ sat_pass }}'
+
+    # Importing the manifest
+    - import_role:
+        name: redhat.satellite.manifest
+      vars:
+        - satellite_organization: "{{ sat_org }}"
+        - satellite_manifest_path: "/root/manifest.zip"
+        - satellite_server_url: "https://{{ ansible_facts['fqdn'] }}"
+        - satellite_username: "{{ sat_user }}"
+        - satellite_password: "{{ sat_pass }}"
+
+    # Refreshing the manifest
+    - name: Refreshing the Manifest
+      command: hammer -u "{{ sat_user }}" -p "{{ sat_pass }}" subscription refresh-manifest --organization "{{ sat_org }}"
+
+    # Repository actions
+    - import_role:
+        name: redhat.satellite.repositories
+      vars:
+        satellite_organization: "{{ sat_org }}"
+        satellite_server_url: "https://{{ ansible_facts['fqdn'] }}"
+        satellite_username: "{{ sat_user }}"
+        satellite_password: "{{ sat_pass }}"
+        satellite_products:
+          - name: Red Hat Enterprise Linux Server
+            repository_sets:
+              - name: Red Hat Enterprise Linux 7 Server (RPMs)
+                basearch: x86_64
+                releasever: 7Server
+              - name: Red Hat Satellite Tools 6.10 (for RHEL 7 Server) (RPMs)
+                basearch: x86_64
+                
+          - name: Red Hat Enterprise Linux for x86_64
+            repository_sets:
+              - name: Red Hat Enterprise Linux 8 for x86_64 - BaseOS (RPMs)
+                releasever: 8
+              - name: Red Hat Enterprise Linux 8 for x86_64 - AppStream (RPMs)
+                releasever: 8 
+              - name: Red Hat Satellite Tools 6.10 for RHEL 8 x86_64 (RPMs)
+
+    - name: "Repo Sync - Red Hat Enterprise Linux for x86_64"
+      redhat.satellite.repository_sync:
+        username: "{{ sat_user }}"
+        password: "{{ sat_pass }}"
+        server_url: "https://{{ ansible_facts['fqdn'] }}"
+        organization: "{{ sat_org }}"
+        product: "Red Hat Enterprise Linux for x86_64"
+
+    - name: "Repo Sync - Red Hat Enterprise Linux"
+      redhat.satellite.repository_sync:
+        username: "{{ sat_user }}"
+        password: "{{ sat_pass }}"
+        server_url: "https://{{ ansible_facts['fqdn'] }}"
+        organization: "{{ sat_org }}"
+        product: "Red Hat Enterprise Linux Server"
+
+    # Activation Key actions
+    - import_role:
+        name: redhat.satellite.activation_keys
+      vars:
+        satellite_organization: "{{ sat_org }}"
+        satellite_server_url: "https://{{ ansible_facts['fqdn'] }}"
+        satellite_username: "{{ sat_user }}"
+        satellite_password: "{{ sat_pass }}"
+        satellite_activation_keys:
+          - name: "ak_rhel"
+

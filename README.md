@@ -160,3 +160,88 @@ Ok, at this moment, the server that will be pushing all the packages and command
     ```
 
     Once you get this output, you should be able to access your server via `https://10.10.10.10` and be able to authenticate in your fresh Foreman server.
+
+
+---
+
+### Satellite
+
+- Install your destination server
+
+    For example, RHEL 7.9, with the IP address `10.10.10.20`
+
+
+- Create the entry in the inventory.yml file
+
+    Here you can see an example, add the ip address according to your target server
+    ```
+    # cat inventory.yml 
+    [satellite01]
+    10.10.10.20
+    ```
+
+- Copy your pub-key to the external server
+
+    You can copy the pubkey using the ssh-copy-id command
+    ```
+    # ssh-copy-id root@10.10.10.20
+    ```
+
+    After this step, you should be able to run a command on the remote server with no necessity of password
+
+    ```
+    # ssh root@10.10.10.20 hostname
+    ```
+
+    The response of the above command should be the remote hostname.
+
+
+- Set the target in your playbook
+
+    Edit the satellite.yml file and update the line `hosts` accordingly
+    ```
+    hosts: satellite01
+    ```
+
+- The manifest file
+
+    Before you run the Satellite playbook, please, keep in mind that a manifest will be required, that said, you can access your customer portal, create a manifest and overwrite the file `manifest.zip` under the folder `files`. The current one it's just an empty file to be used as reference.
+
+
+- Run the playbook
+
+    One attention point here, in this case, it will be necessary to authenticate the server in order to register through RHSM. In this case, you can set the credentials in two different ways, via `hard code` or `parameter`. Let's check both.
+
+    Via `hard code`, you can open the file `satellite.yml` and update the follow lines
+    ```
+    rhsm_username: "your_portal_username_here"
+    rhsm_password: "your_portal_password_here"
+    ```
+
+    Doing that, you can safely execute the command below and your Satellite will be installed with no issues.
+    ```
+    # ansible-playbook -i inventory.yml satellite.yml
+    ```
+
+    Or
+
+    Via `parameter`, you don't need to edit the file `satellite.yml`, instead, you can run the command as below
+    ```
+    # ansible-playbook -i inventory.yml -e "rhsm_username=your_portal_user_here" -e "rhsm_password=your_portal_password_here" satellite.yml 
+    ```
+
+    Ps.: Soon I'll be adding the info presenting how to use vault.
+
+
+    Here you can see an output example
+    ```
+    (installer) satellite_foreman_easy-installer]# ansible-playbook -i inventory.yml satellite.yml
+    ...
+    PLAY RECAP **********************************************************************************************************
+    10.10.10.20                : ok=12   changed=1    unreachable=0    failed=0    skipped=2    rescued=0    ignored=0
+    ```
+
+    Once you get this output, you should be able to access your server via `https://10.10.10.20` and be able to authenticate in your fresh Satellite server.
+
+
+
