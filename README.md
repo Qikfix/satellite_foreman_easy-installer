@@ -134,18 +134,11 @@ Ok, at this moment, the server that will be pushing all the packages and command
     The response of the above command should be the remote hostname.
 
 
-- Set the target in your playbook
-
-    Edit the foreman.yml file and update the line `hosts` accordingly
-    ```
-    hosts: foreman01
-    ```
-
 - Run the playbook
 
-    You can call the playbook passing some parameters via `-e` flag, in this case, we are not passing it.
+    You can call the playbook passing some parameters via `-e` flag, in this case, we will pass the server group name.
     ```
-    # ansible-playbook -i inventory.yml foreman.yml
+    # ansible-playbook -i inventory.yml -e "server_group=foreman01" foreman.yml
     ```
 
     This will install the foreman in the latest version in your target server.
@@ -153,7 +146,7 @@ Ok, at this moment, the server that will be pushing all the packages and command
 
     Here you can see an output example
     ```
-    (installer) satellite_foreman_easy-installer]# ansible-playbook -i inventory.yml foreman.yml
+    (installer) satellite_foreman_easy-installer]# ansible-playbook -i inventory.yml -e "server_group=foreman01" foreman.yml
     ...
     PLAY RECAP **********************************************************************************************************
     10.10.10.10                : ok=12   changed=1    unreachable=0    failed=0    skipped=2    rescued=0    ignored=0
@@ -220,13 +213,6 @@ Ok, at this moment, the server that will be pushing all the packages and command
     The response of the above command should be the remote hostname.
 
 
-- Set the target in your playbook
-
-    Edit the satellite.yml file and update the line `hosts` accordingly
-    ```
-    hosts: satellite01
-    ```
-
 - The manifest file
 
     Before you run the Satellite playbook, please, keep in mind that a manifest will be required, that said, you can access your customer portal, create a manifest and overwrite the file `manifest.zip` under the folder `files`. The current one it's just an empty file to be used as reference.
@@ -288,7 +274,7 @@ Ok, at this moment, the server that will be pushing all the packages and command
     Note. `base_os="rhel7"` will be the standard value. It will be necessary to pass it only when installing Satellite over `RHEL8`.
 
 
-    Ps.: Soon I'll be adding the info presenting how to use vault.
+    Ps.: Soon I'll be adding the information presenting how to use vault feature.
 
 
     Here you can see an output example
@@ -302,4 +288,4 @@ Ok, at this moment, the server that will be pushing all the packages and command
     Once you get this output, you should be able to access your server via `https://10.10.10.20` and be able to authenticate in your fresh Satellite server.
 
 
-    On both cases, if for any reason you see error, please, check the error, if you see no reason for that, feel free to rerun the command, maybe it will work as expected in the second run.
+    On both cases, if for any reason you see error during the process, please, check the error, if you see no reason for that, feel free to rerun the command, probably it will work as expected in the second run.
