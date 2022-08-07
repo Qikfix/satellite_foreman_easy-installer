@@ -134,18 +134,11 @@ Ok, at this moment, the server that will be pushing all the packages and command
     The response of the above command should be the remote hostname.
 
 
-- Set the target in your playbook
-
-    Edit the foreman.yml file and update the line `hosts` accordingly
-    ```
-    hosts: foreman01
-    ```
-
 - Run the playbook
 
-    You can call the playbook passing some parameters via `-e` flag, in this case, we are not passing it.
+    You can call the playbook passing some parameters via `-e` flag, in this case, we will pass the server group name.
     ```
-    # ansible-playbook -i inventory.yml foreman.yml
+    # ansible-playbook -i inventory.yml -e "server_group=foreman01" foreman.yml
     ```
 
     This will install the foreman in the latest version in your target server.
@@ -153,7 +146,7 @@ Ok, at this moment, the server that will be pushing all the packages and command
 
     Here you can see an output example
     ```
-    (installer) satellite_foreman_easy-installer]# ansible-playbook -i inventory.yml foreman.yml
+    (installer) satellite_foreman_easy-installer]# ansible-playbook -i inventory.yml -e "server_group=foreman01" foreman.yml
     ...
     PLAY RECAP **********************************************************************************************************
     10.10.10.10                : ok=12   changed=1    unreachable=0    failed=0    skipped=2    rescued=0    ignored=0
@@ -178,6 +171,30 @@ Ok, at this moment, the server that will be pushing all the packages and command
     # cat inventory.yml 
     [satellite01]
     10.10.10.20
+
+    [sat65]
+    wallsat65.local.net
+
+    [sat66]
+    wallsat66.local.net
+
+    [sat67]
+    wallsat67.local.net
+
+    [sat68]
+    wallsat68.local.net
+
+    [sat69]
+    wallsat69.local.net
+
+    [sat610]
+    wallsat610.local.net
+
+    [sat611-rhel7]
+    wallsat611-rhel7.local.net
+
+    [sat611-rhel8]
+    wallsat611-rhel8.local.net
     ```
 
 - Copy your pub-key to the external server
@@ -195,13 +212,6 @@ Ok, at this moment, the server that will be pushing all the packages and command
 
     The response of the above command should be the remote hostname.
 
-
-- Set the target in your playbook
-
-    Edit the satellite.yml file and update the line `hosts` accordingly
-    ```
-    hosts: satellite01
-    ```
 
 - The manifest file
 
@@ -230,12 +240,46 @@ Ok, at this moment, the server that will be pushing all the packages and command
     # ansible-playbook -i inventory.yml -e "rhsm_username=your_portal_user_here" -e "rhsm_password=your_portal_password_here" satellite.yml 
     ```
 
-    Ps.: Soon I'll be adding the info presenting how to use vault.
+    Here you can find some available parameters
+    
+    - `-e "rhsm_username=your_portal_user_here"`
+    - `-e "rhsm_password=your_portal_password_here"`
+    - `-e "server_group=sat65"` up to `-e "server_group=sat610"`, this will be according to the name in the `inventory.yml` file.
+    - `-e "sat_version=6.5"` up to `-e "sat_version=6.11"`
+    - `-e "base_os=rhel8"`, only for rhel8 servers.
+
+
+    Let's check some examples
+
+    - Satellite 6.7
+    ```
+    $ ansible-playbook -i inventory.yml -e "rhsm_username=your_portal_user_here" -e "rhsm_password=your_portal_password_here" -e "server_group=sat67" -e "sat_version=6.7" satellite.yml
+    ```
+
+    - Satellite 6.10
+    ```
+    $ ansible-playbook -i inventory.yml -e "rhsm_username=your_portal_user_here" -e "rhsm_password=your_portal_password_here" -e "server_group=sat610" -e "sat_version=6.10" satellite.yml
+    ```
+
+    - Satellite 6.11 over RHEL7
+    ```
+    $ ansible-playbook -i inventory.yml -e "rhsm_username=your_portal_user_here" -e "rhsm_password=your_portal_password_here" -e "server_group=sat611-rhel7" -e "sat_version=6.11" satellite.yml
+    ```
+
+    - Satellite 6.11 over RHEL8
+    ```
+    $ ansible-playbook -i inventory.yml -e "rhsm_username=your_portal_user_here" -e "rhsm_password=your_portal_password_here" -e "server_group=sat611-rhel8" -e "sat_version=6.11" -e "base_os=rhel8" satellite.yml
+    ```
+
+    Note. `base_os="rhel7"` will be the standard value. It will be necessary to pass it only when installing Satellite over `RHEL8`.
+
+
+    Ps.: Soon I'll be adding the information presenting how to use vault feature.
 
 
     Here you can see an output example
     ```
-    (installer) satellite_foreman_easy-installer]# ansible-playbook -i inventory.yml satellite.yml
+    (installer) satellite_foreman_easy-installer]# ansible-playbook -i inventory.yml -e "rhsm_username=your_portal_user_here" -e "rhsm_password=your_portal_password_here" -e "server_group=satellite01" -e "sat_version=6.10" satellite.yml
     ...
     PLAY RECAP **********************************************************************************************************
     10.10.10.20                : ok=12   changed=1    unreachable=0    failed=0    skipped=2    rescued=0    ignored=0
@@ -244,4 +288,4 @@ Ok, at this moment, the server that will be pushing all the packages and command
     Once you get this output, you should be able to access your server via `https://10.10.10.20` and be able to authenticate in your fresh Satellite server.
 
 
-
+    On both cases, if for any reason you see error during the process, please, check the error, if you see no reason for that, feel free to rerun the command, probably it will work as expected in the second run.

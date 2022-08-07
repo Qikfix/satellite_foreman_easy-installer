@@ -4,7 +4,7 @@
 # https://github.com/theforeman/foreman-ansible-modules
 #
 - name: Foreman Installer Playbook here
-  hosts: foreman01
+  hosts: "{{ server_group }}"
 
   # Setting which collections will be used/loaded
   collections:
