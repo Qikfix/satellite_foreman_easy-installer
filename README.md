@@ -279,7 +279,7 @@ Ok, at this moment, the server that will be pushing all the packages and command
 
     Here you can see an output example
     ```
-    (installer) satellite_foreman_easy-installer]# ansible-playbook -i inventory.yml satellite.yml
+    (installer) satellite_foreman_easy-installer]# ansible-playbook -i inventory.yml -e "rhsm_username=your_portal_user_here" -e "rhsm_password=your_portal_password_here" -e "server_group=satellite01" -e "sat_version=6.10" satellite.yml
     ...
     PLAY RECAP **********************************************************************************************************
     10.10.10.20                : ok=12   changed=1    unreachable=0    failed=0    skipped=2    rescued=0    ignored=0
