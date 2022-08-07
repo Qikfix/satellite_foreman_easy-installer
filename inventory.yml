@@ -1,5 +1,34 @@
 [foreman01]
 10.8.30.148
 
-[satellite01]
-10.10.10.11
+# ok
+[sat65]
+wallsat65.local.net
+
+# ok
+[sat66]
+wallsat66.local.net
+
+# ok
+[sat67]
+wallsat67.local.net
+
+# ok
+[sat68]
+wallsat68.local.net
+
+# ok
+[sat69]
+wallsat69.local.net
+
+# ok
+[sat610]
+wallsat610.local.net
+
+# ok
+[sat611-rhel7]
+wallsat611-rhel7.local.net
+
+# ok
+[sat611-rhel8]
+wallsat611-rhel8.local.net
