@@ -180,25 +180,28 @@ Ok, at this moment, the server that will be pushing all the packages and command
     10.10.10.20
 
     [sat65]
-    10.10.10.30
+    wallsat65.local.net
 
     [sat66]
-    10.10.10.31
+    wallsat66.local.net
 
     [sat67]
-    10.10.10.32
+    wallsat67.local.net
 
     [sat68]
-    10.10.10.33
+    wallsat68.local.net
 
     [sat69]
-    10.10.10.34
+    wallsat69.local.net
 
     [sat610]
-    10.10.10.35
+    wallsat610.local.net
 
     [sat611-rhel7]
-    10.10.10.36
+    wallsat611-rhel7.local.net
+
+    [sat611-rhel8]
+    wallsat611-rhel8.local.net
     ```
 
 - Copy your pub-key to the external server
