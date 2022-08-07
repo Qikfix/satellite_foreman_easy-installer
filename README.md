@@ -178,6 +178,27 @@ Ok, at this moment, the server that will be pushing all the packages and command
     # cat inventory.yml 
     [satellite01]
     10.10.10.20
+
+    [sat65]
+    10.10.10.30
+
+    [sat66]
+    10.10.10.31
+
+    [sat67]
+    10.10.10.32
+
+    [sat68]
+    10.10.10.33
+
+    [sat69]
+    10.10.10.34
+
+    [sat610]
+    10.10.10.35
+
+    [sat611-rhel7]
+    10.10.10.36
     ```
 
 - Copy your pub-key to the external server
@@ -230,6 +251,40 @@ Ok, at this moment, the server that will be pushing all the packages and command
     # ansible-playbook -i inventory.yml -e "rhsm_username=your_portal_user_here" -e "rhsm_password=your_portal_password_here" satellite.yml 
     ```
 
+    Here you can find some available parameters
+    
+    - `-e "rhsm_username=your_portal_user_here"`
+    - `-e "rhsm_password=your_portal_password_here"`
+    - `-e "server_group=sat65"` up to `-e "server_group=sat610"`, this will be according to the name in the `inventory.yml` file.
+    - `-e "sat_version=6.5"` up to `-e "sat_version=6.11"`
+    - `-e "base_os=rhel8"`, only for rhel8 servers.
+
+
+    Let's check some examples
+
+    - Satellite 6.7
+    ```
+    $ ansible-playbook -i inventory.yml -e "rhsm_username=your_portal_user_here" -e "rhsm_password=your_portal_password_here" -e "server_group=sat67" -e "sat_version=6.7" satellite.yml
+    ```
+
+    - Satellite 6.10
+    ```
+    $ ansible-playbook -i inventory.yml -e "rhsm_username=your_portal_user_here" -e "rhsm_password=your_portal_password_here" -e "server_group=sat610" -e "sat_version=6.10" satellite.yml
+    ```
+
+    - Satellite 6.11 over RHEL7
+    ```
+    $ ansible-playbook -i inventory.yml -e "rhsm_username=your_portal_user_here" -e "rhsm_password=your_portal_password_here" -e "server_group=sat611-rhel7" -e "sat_version=6.11" satellite.yml
+    ```
+
+    - Satellite 6.11 over RHEL8
+    ```
+    $ ansible-playbook -i inventory.yml -e "rhsm_username=your_portal_user_here" -e "rhsm_password=your_portal_password_here" -e "server_group=sat611-rhel8" -e "sat_version=6.11" -e "base_os=rhel8" satellite.yml
+    ```
+
+    Note. `base_os="rhel7"` will be the standard value. It will be necessary to pass it only when installing Satellite over `RHEL8`.
+
+
     Ps.: Soon I'll be adding the info presenting how to use vault.
 
 
@@ -244,4 +299,4 @@ Ok, at this moment, the server that will be pushing all the packages and command
     Once you get this output, you should be able to access your server via `https://10.10.10.20` and be able to authenticate in your fresh Satellite server.
 
 
-
+    On both cases, if for any reason you see error, please, check the error, if you see no reason for that, feel free to rerun the command, maybe it will work as expected in the second run.
