@@ -87,9 +87,9 @@
 
     # fatal: [10.8.29.194]: FAILED! => {"changed": false, "msg": "Failed to download metadata for repo 'rhel-8-for-x86_64-baseos-rpms': Cannot download repomd.xml: Cannot download repodata/repomd.xml: All mirrors were tried", "rc": 1, "results": []}
 
-    - name: Removing the puppet-agent package
-      command: bash -c 'aux=$(rpm -qa | grep puppet-agent); count=$(echo $aux | wc -w); if [ $count -ne 0 ]; then rpm -e $aux --nodeps; fi'
-      when: base_os == "rhel8" 
+    # - name: Removing the puppet-agent package
+    #   command: bash -c 'aux=$(rpm -qa | grep puppet-agent); count=$(echo $aux | wc -w); if [ $count -ne 0 ]; then rpm -e $aux --nodeps; fi'
+    #   when: base_os == "rhel8" 
 
 
 
@@ -194,6 +194,14 @@
     #       - '--foreman-admin-password {{ sat_pass }}'
     #   when: sat_version == "6.5" or sat_version == "6.6"
 
+    # Sometimes seeing sat611 failing during the installation because the server was unresponsive. It probably will fix this behavior.
+    # when rerunning the playbook/installer.
+    # 404 Client Error: Not Found for url: https://wallsat611-rhel8.d.sysmgmt.cee.********.com/apidoc/v2.json
+    - name: Foreman-rake apipie:cache
+      # command: foreman-rake apipie:cache
+      # Adding only the en version to speed up this process, instead of a lot of idioms
+      command: bash -c 'export FOREMAN_APIPIE_LANGS=en && foreman-rake apipie:cache --trace'
+      when: base_os == "rhel8"
 
     # Calling the installer
     # When using the collection, it's failing for 6.7 or less because of the flag "--detailed something"
@@ -203,7 +211,7 @@
 
 
     # Calling the installer
-    # When using the collection, it's failing for 6.7 or less because of the flag "--detailed"
+    # When using the collection, it's failing for 6.7 or less because of the flag "--detailedsomething"
     - name: Satellite Installer, version equal to 6.7
       command: bash -c 'satellite-installer --scenario "{{ def_scenario }}" --foreman-initial-organization "{{ sat_org }}" --foreman-initial-admin-password {{ sat_pass }}'
       when: sat_version == "6.7"
