@@ -27,8 +27,11 @@
     sat_version: "6.10"
     base_os: "rhel7"
 
+    # Path to the manifest file to be used during the installation
+    manifest_path: "manifest.zip"
 
- 
+
+
   tasks:
     # If you would like to see the list of facts, just disable the section below and enjoy it.
     # - name: checking some variables
@@ -37,31 +40,31 @@
 
     # Firewall
     - name: Disabling and Stopping firewalld
-      systemd:
+      ansible.builtin.systemd:
         name: firewalld
         state: stopped
         enabled: no
 
     # Local Name Resolution
     - name: Adding the entry to /etc/hosts
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: /etc/hosts
         line: "{{ ansible_facts.default_ipv4['address'] }} {{ ansible_facts['nodename'] }} {{ ansible_facts['hostname'] }}"
 
     # Disabling it on rhel7 in case of the script rerun
     - name: Disabling foreman-protector ">/etc/yum/pluginconf.d/foreman-protector.conf"
-      command: bash -c '>/etc/yum/pluginconf.d/foreman-protector.conf'
-      when: base_os == "rhel7"
+      ansible.builtin.command: bash -c 'echo [main] >/etc/yum/pluginconf.d/foreman-protector.conf'
+      when: base_os == "rhel7" or base_os == "rhel8"
 
     # Manifest File
     - name: Copying the manifest
-      copy:
-        src: manifest.zip
+      ansible.builtin.copy:
+        src: "{{ manifest_path | default('manifest.zip') }}"
         dest: /root/manifest.zip
 
     # Removing the katello-ca-consumer package, in case it is still around
     - name: Removing the katello-ca-consumer package package for rhel7
-      yum:
+      ansible.builtin.yum:
         name: 'katello-ca-consumer*'
         state: absent
       when: base_os == "rhel7"
@@ -75,12 +78,12 @@
     # The above command didn't work properly when the machine has no repo. It was failing
     # when trying to download the repodata/repomd.xml ... why?
     - name: Removing the katello-ca-consumer package for rhel8
-      command: bash -c 'aux=$(rpm -qa | grep katello-ca-consumer); count=$(echo $aux | wc -w); if [ $count -ne 0 ]; then rpm -e $aux; fi'
+      ansible.builtin.command: bash -c 'aux=$(rpm -qa | grep katello-ca-consumer); count=$(echo $aux | wc -w); if [ $count -ne 0 ]; then rpm -e $aux; fi'
       when: base_os == "rhel8" 
 
     # Removing the puppet-agent package
     - name: Removing the puppet-agent package
-      yum:
+      ansible.builtin.yum:
         name: 'puppet-agent'
         state: absent
       when: base_os == "rhel7"
@@ -95,11 +98,11 @@
 
     # Cleaning the subsman cache
     - name: Subscription-manager clean
-      command: subscription-manager clean
+      ansible.builtin.command: subscription-manager clean
 
     # Register to RHSM
     - name: Register to RHSM
-      redhat_subscription:
+      community.general.redhat_subscription:
         state: present
         username: "{{ rhsm_username }}"
         password: "{{ rhsm_password }}"
@@ -107,81 +110,112 @@
 
     # Attaching the Employee Subscription
     - name: Attach the correct entitlement
-      shell: |
+      ansible.builtin.shell: |
         pool_id=$(subscription-manager list --all --available --matches="Employee SKU" | grep Pool | head -n1 | awk '{print $3}') && subscription-manager attach --pool $pool_id
 
     # Repositories
     - name: Disabling all the repos
-      rhsm_repository:
+      community.general.rhsm_repository:
         name: '*'
         state: disabled
 
     - name: Enabling the Satellite repos for Satellite 6.5
-      rhsm_repository:
+      community.general.rhsm_repository:
         name: rhel-7-server-rpms,rhel-server-rhscl-7-rpms,rhel-7-server-satellite-6.5-rpms,rhel-7-server-satellite-maintenance-6-rpms,rhel-7-server-ansible-2.6-rpms
         state: enabled
       when: sat_version == "6.5"
 
     - name: Enabling the Satellite repos for Satellite 6.6
-      rhsm_repository:
+      community.general.rhsm_repository:
         name: rhel-7-server-rpms,rhel-7-server-satellite-6.6-rpms,rhel-7-server-satellite-maintenance-6-rpms,rhel-server-rhscl-7-rpms,rhel-7-server-ansible-2.8-rpms
         state: enabled
       when: sat_version == "6.6"
 
     - name: Enabling the Satellite repos for Satellite 6.7
-      rhsm_repository:
+      community.general.rhsm_repository:
         name: rhel-7-server-rpms,rhel-7-server-satellite-6.7-rpms,rhel-7-server-satellite-maintenance-6-rpms,rhel-server-rhscl-7-rpms,rhel-7-server-ansible-2.8-rpms
         state: enabled
       when: sat_version == "6.7"
 
     - name: Enabling the Satellite repos for Satellite 6.8
-      rhsm_repository:
+      community.general.rhsm_repository:
         name: rhel-7-server-rpms,rhel-7-server-satellite-6.8-rpms,rhel-7-server-satellite-maintenance-6-rpms,rhel-server-rhscl-7-rpms,rhel-7-server-ansible-2.9-rpms
         state: enabled
       when: sat_version == "6.8"
 
     - name: Enabling the Satellite repos for Satellite 6.9
-      rhsm_repository:
+      community.general.rhsm_repository:
         name: rhel-7-server-rpms,rhel-7-server-satellite-6.9-rpms,rhel-7-server-satellite-maintenance-6-rpms,rhel-server-rhscl-7-rpms,rhel-7-server-ansible-2.9-rpms
         state: enabled
       when: sat_version == "6.9"
 
     - name: Enabling the Satellite repos for Satellite 6.10
-      rhsm_repository:
+      community.general.rhsm_repository:
         name: rhel-7-server-rpms,rhel-7-server-satellite-6.10-rpms,rhel-7-server-satellite-maintenance-6-rpms,rhel-server-rhscl-7-rpms,rhel-7-server-ansible-2.9-rpms
         state: enabled
       when: sat_version == "6.10"
 
     - name: Enabling the Satellite repos for Satellite 6.11 on RHEL7
-      rhsm_repository:
+      community.general.rhsm_repository:
         name: rhel-7-server-rpms,rhel-server-rhscl-7-rpms,rhel-7-server-ansible-2.9-rpms,rhel-7-server-satellite-6.11-rpms,rhel-7-server-satellite-maintenance-6.11-rpms
         state: enabled
       when: sat_version == "6.11" and base_os == "rhel7"
 
     - name: Enabling the Satellite repos for Satellite 6.11 on RHEL8
-      rhsm_repository:
+      community.general.rhsm_repository:
         name: rhel-8-for-x86_64-baseos-rpms,rhel-8-for-x86_64-appstream-rpms,satellite-6.11-for-rhel-8-x86_64-rpms,satellite-maintenance-6.11-for-rhel-8-x86_64-rpms
         state: enabled
       when: sat_version == "6.11" and base_os == "rhel8"
 
+    - name: Enabling the Satellite repos for Satellite 6.12 on RHEL8
+      community.general.rhsm_repository:
+        name: rhel-8-for-x86_64-baseos-rpms,rhel-8-for-x86_64-appstream-rpms,satellite-6.12-for-rhel-8-x86_64-rpms,satellite-maintenance-6.12-for-rhel-8-x86_64-rpms
+        state: enabled
+      when: sat_version == "6.12" and base_os == "rhel8"
+
+    - name: Enabling the Satellite repos for Satellite 6.13 on RHEL8
+      community.general.rhsm_repository:
+        name: rhel-8-for-x86_64-baseos-rpms,rhel-8-for-x86_64-appstream-rpms,satellite-6.13-for-rhel-8-x86_64-rpms,satellite-maintenance-6.13-for-rhel-8-x86_64-rpms
+        state: enabled
+      when: sat_version == "6.13" and base_os == "rhel8"
+
+    - name: Enabling the Satellite repos for Satellite 6.14 on RHEL8
+      community.general.rhsm_repository:
+        name: rhel-8-for-x86_64-baseos-rpms,rhel-8-for-x86_64-appstream-rpms,satellite-6.14-for-rhel-8-x86_64-rpms,satellite-maintenance-6.14-for-rhel-8-x86_64-rpms
+        state: enabled
+      when: sat_version == "6.14" and base_os == "rhel8"
+
+    - name: Enabling the Satellite repos for Satellite 6.15 on RHEL8
+      community.general.rhsm_repository:
+        name: rhel-8-for-x86_64-baseos-rpms,rhel-8-for-x86_64-appstream-rpms,satellite-6.15-for-rhel-8-x86_64-rpms,satellite-maintenance-6.15-for-rhel-8-x86_64-rpms
+        state: enabled
+      when: sat_version == "6.15" and base_os == "rhel8"
+
     - name: Updating the server
-      command: yum update -y
+      ansible.builtin.yum:
+        name: '*'
+        state: latest
 
     - name: Enabling the dnf module "dnf module enable satellite:el8"
-      command: dnf module enable satellite:el8 -y
-      when: sat_version == "6.11" and base_os == "rhel8"
-
+      ansible.builtin.command: dnf module enable satellite:el8 -y
+      when: (sat_version == "6.11" and base_os == "rhel8") or
+            (sat_version == "6.12" and base_os == "rhel8") or
+            (sat_version == "6.13" and base_os == "rhel8") or
+            (sat_version == "6.14" and base_os == "rhel8") or
+            (sat_version == "6.15" and base_os == "rhel8")
 
 
     # Packages
     - name: Installing Satellite Package
-      yum:
+      ansible.builtin.yum:
         name: satellite
         state: present
 
     # Add this here, before runing the installer
     - name: Removing puppetlabs ssl directory "/etc/puppetlabs/puppet/ssl/"
-      command: rm -rf /etc/puppetlabs/puppet/ssl/
+      ansible.builtin.file:
+        path: /etc/puppetlabs/puppet/ssl/
+        state: absent
 
 
     # # Calling the installer
@@ -200,21 +234,24 @@
     - name: Foreman-rake apipie:cache
       # command: foreman-rake apipie:cache
       # Adding only the en version to speed up this process, instead of a lot of idioms
-      command: bash -c 'export FOREMAN_APIPIE_LANGS=en && foreman-rake apipie:cache --trace'
-      when: base_os == "rhel8"
+      # command: bash -c 'export FOREMAN_APIPIE_LANGS=en && foreman-rake apipie:cache --trace'
+      command: bash -c 'foreman-rake apipie:cache --trace'
+      when: base_os == "rhel7" or base_os == "rhel8"
+      tags:
+        - api
 
     # Calling the installer
     # When using the collection, it's failing for 6.7 or less because of the flag "--detailed something"
     - name: Satellite Installer, versions equal or older than 6.6
-      command: bash -c 'satellite-installer --scenario "{{ def_scenario }}" --foreman-initial-organization "{{ sat_org }}" --foreman-admin-password {{ sat_pass }}'
-      when: sat_version == "6.5" or sat_version == "6.6"
+      ansible.builtin.command: bash -c 'satellite-installer --scenario "{{ def_scenario }}" --foreman-initial-organization "{{ sat_org }}" --foreman-admin-password {{ sat_pass }}'
+      when: sat_version == "6.5"
 
 
     # Calling the installer
     # When using the collection, it's failing for 6.7 or less because of the flag "--detailedsomething"
     - name: Satellite Installer, version equal to 6.7
-      command: bash -c 'satellite-installer --scenario "{{ def_scenario }}" --foreman-initial-organization "{{ sat_org }}" --foreman-initial-admin-password {{ sat_pass }}'
-      when: sat_version == "6.7"
+      ansible.builtin.command: bash -c 'satellite-installer --scenario "{{ def_scenario }}" --foreman-initial-organization "{{ sat_org }}" --foreman-initial-admin-password {{ sat_pass }}'
+      when: sat_version == "6.6" or sat_version == "6.7"
 
 
     # Calling the installer
@@ -226,7 +263,7 @@
         satellite_installer_options:
           - '--foreman-initial-organization "{{ sat_org }}"'
           - '--foreman-initial-admin-password {{ sat_pass }}'
-      when: sat_version == "6.8" or sat_version == "6.9" or sat_version == "6.10" or sat_version == "6.11"
+      when: sat_version == "6.8" or sat_version == "6.9" or sat_version == "6.10" or sat_version == "6.11" or sat_version == "6.12" or sat_version == "6.13" or sat_version == "6.14" or sat_version == "6.15" 
 
 
     # Importing the manifest
@@ -238,12 +275,14 @@
         - satellite_server_url: "https://{{ ansible_facts['nodename'] }}"
         - satellite_username: "{{ sat_user }}"
         - satellite_password: "{{ sat_pass }}"
+      tags:
+        - post
 
     # Refreshing the manifest
     - name: Refreshing the Manifest
-      command: hammer -u "{{ sat_user }}" -p "{{ sat_pass }}" subscription refresh-manifest --organization "{{ sat_org }}"
-
-
+      ansible.builtin.command: hammer -u "{{ sat_user }}" -p "{{ sat_pass }}" subscription refresh-manifest --organization "{{ sat_org }}"
+      tags:
+        - post
 
     # Repository actions
     - import_role:
@@ -269,12 +308,14 @@
               - name: Red Hat Enterprise Linux 8 for x86_64 - AppStream (RPMs)
                 releasever: 8 
               - name: Red Hat Satellite Tools 6.10 for RHEL 8 x86_64 (RPMs)
-
+      tags:
+        - repos
 
     # This call will trigger the sync process and will move on
     - name: Syncronizing repos via hammer "--async"
-      command: bash -c 'for b in $(hammer --csv --no-headers repository list | cut -d, -f1); do echo - $b; hammer repository synchronize --id $b --async; done'
-
+      ansible.builtin.command: bash -c 'for b in $(hammer --csv --no-headers repository list | cut -d, -f1); do echo - $b; hammer repository synchronize --id $b --async; done'
+      tags:
+        - repos
 
     #  The call below doesn't have any "--async" feature at this moment. Keeping it commented until we get this feature done.
     # - name: "Repo Sync - Red Hat Enterprise Linux for x86_64"
@@ -303,4 +344,5 @@
         satellite_password: "{{ sat_pass }}"
         satellite_activation_keys:
           - name: "ak_rhel"
-
+      tags:
+        - ak
