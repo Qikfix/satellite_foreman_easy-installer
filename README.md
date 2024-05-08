@@ -246,29 +246,61 @@ Ok, at this moment, the server that will be pushing all the packages and command
     - `-e "rhsm_password=your_portal_password_here"`
     - `-e "server_group=sat65"` up to `-e "server_group=sat610"`, this will be according to the name in the `inventory.yml` file.
     - `-e "sat_version=6.5"` up to `-e "sat_version=6.11"`
-    - `-e "base_os=rhel8"`, only for rhel8 servers.
+    - `-e "base_os=rhel8"`, only for rhel8 servers
+    - `-e "manifest_path=/path/to/the/manifest.zip"`, to pass the manifest file path
 
 
     Let's check some examples
 
+
+    - Satellite 6.5
+    ```
+    $ ansible-playbook -i inventory.yml -e "rhsm_username=your_portal_user_here" -e "rhsm_password=your_portal_password_here" -e "server_group=sat65" -e "sat_version=6.5" -e "manifest_path=/path/to/the/manifest.zip" satellite.yml
+    ```
+
+    - Satellite 6.6
+    ```
+    $ ansible-playbook -i inventory.yml -e "rhsm_username=your_portal_user_here" -e "rhsm_password=your_portal_password_here" -e "server_group=sat66" -e "sat_version=6.6" -e "manifest_path=/path/to/the/manifest.zip" satellite.yml
+    ```
+
     - Satellite 6.7
     ```
-    $ ansible-playbook -i inventory.yml -e "rhsm_username=your_portal_user_here" -e "rhsm_password=your_portal_password_here" -e "server_group=sat67" -e "sat_version=6.7" satellite.yml
+    $ ansible-playbook -i inventory.yml -e "rhsm_username=your_portal_user_here" -e "rhsm_password=your_portal_password_here" -e "server_group=sat67" -e "sat_version=6.7" -e "manifest_path=/path/to/the/manifest.zip" satellite.yml
     ```
 
     - Satellite 6.10
     ```
-    $ ansible-playbook -i inventory.yml -e "rhsm_username=your_portal_user_here" -e "rhsm_password=your_portal_password_here" -e "server_group=sat610" -e "sat_version=6.10" satellite.yml
+    $ ansible-playbook -i inventory.yml -e "rhsm_username=your_portal_user_here" -e "rhsm_password=your_portal_password_here" -e "server_group=sat610" -e "sat_version=6.10" -e "manifest_path=/path/to/the/manifest.zip" satellite.yml
     ```
 
     - Satellite 6.11 over RHEL7
     ```
-    $ ansible-playbook -i inventory.yml -e "rhsm_username=your_portal_user_here" -e "rhsm_password=your_portal_password_here" -e "server_group=sat611-rhel7" -e "sat_version=6.11" satellite.yml
+    $ ansible-playbook -i inventory.yml -e "rhsm_username=your_portal_user_here" -e "rhsm_password=your_portal_password_here" -e "server_group=sat611-rhel7" -e "sat_version=6.11" -e "manifest_path=/path/to/the/manifest.zip" satellite.yml
     ```
 
     - Satellite 6.11 over RHEL8
     ```
-    $ ansible-playbook -i inventory.yml -e "rhsm_username=your_portal_user_here" -e "rhsm_password=your_portal_password_here" -e "server_group=sat611-rhel8" -e "sat_version=6.11" -e "base_os=rhel8" satellite.yml
+    $ ansible-playbook -i inventory.yml -e "rhsm_username=your_portal_user_here" -e "rhsm_password=your_portal_password_here" -e "server_group=sat611-rhel8" -e "sat_version=6.11" -e "manifest_path=/path/to/the/manifest.zip" -e "base_os=rhel8" satellite.yml
+    ```
+
+    - Satellite 6.12 over RHEL8
+    ```
+    $ ansible-playbook -i inventory.yml -e "rhsm_username=your_portal_user_here" -e "rhsm_password=your_portal_password_here" -e "server_group=sat612" -e "sat_version=6.12" -e "manifest_path=/path/to/the/manifest.zip" -e "base_os=rhel8" satellite.yml
+    ```
+
+    - Satellite 6.13 over RHEL8
+    ```
+    $ ansible-playbook -i inventory.yml -e "rhsm_username=your_portal_user_here" -e "rhsm_password=your_portal_password_here" -e "server_group=sat613" -e "sat_version=6.13" -e "manifest_path=/path/to/the/manifest.zip" -e "base_os=rhel8" satellite.yml
+    ```
+
+    - Satellite 6.14 over RHEL8
+    ```
+    $ ansible-playbook -i inventory.yml -e "rhsm_username=your_portal_user_here" -e "rhsm_password=your_portal_password_here" -e "server_group=sat614" -e "sat_version=6.14" -e "manifest_path=/path/to/the/manifest.zip" -e "base_os=rhel8" satellite.yml
+    ```
+
+    - Satellite 6.15 over RHEL8
+    ```
+    $ ansible-playbook -i inventory.yml -e "rhsm_username=your_portal_user_here" -e "rhsm_password=your_portal_password_here" -e "server_group=sat615" -e "sat_version=6.15" -e "manifest_path=/path/to/the/manifest.zip" -e "base_os=rhel8" satellite.yml    
     ```
 
     Note. `base_os="rhel7"` will be the standard value. It will be necessary to pass it only when installing Satellite over `RHEL8`.

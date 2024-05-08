@@ -1,0 +1,21 @@
+---
+- name: Update all the systems and updating the password
+  hosts: allservers
+  become: true
+  remote_user: root
+  gather_facts: false
+
+  tasks:
+
+    - name: Update the root password to redhat
+      ansible.builtin.user:
+        user: root
+        password: "{{ 'changeme' | password_hash('sha512') }}"
+
+    - name: Update the Systems
+      ansible.builtin.yum:
+        name: '*'
+        state: latest
+
+    # - name: Restart the systems
+    #   ansible.builtin.command: init 6

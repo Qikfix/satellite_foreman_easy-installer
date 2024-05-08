@@ -8,7 +8,6 @@ collections:
     type: git
     version: develop
 
-
   - name: https://github.com/RedHatSatellite/satellite-operations-collection.git
     type: git
     version: master
