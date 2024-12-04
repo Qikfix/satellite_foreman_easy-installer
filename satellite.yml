@@ -191,6 +191,18 @@
         state: enabled
       when: sat_version == "6.15" and base_os == "rhel8"
 
+    - name: Enabling the Satellite repos for Satellite 6.16 on RHEL8
+      community.general.rhsm_repository:
+        name: rhel-8-for-x86_64-baseos-rpms,rhel-8-for-x86_64-appstream-rpms,satellite-6.16-for-rhel-8-x86_64-rpms,satellite-maintenance-6.16-for-rhel-8-x86_64-rpms
+        state: enabled
+      when: sat_version == "6.16" and base_os == "rhel8"
+
+    - name: Enabling the Satellite repos for Satellite 6.16 on RHEL9
+      community.general.rhsm_repository:
+        name: rhel-9-for-x86_64-baseos-rpms,rhel-9-for-x86_64-appstream-rpms,satellite-6.16-for-rhel-9-x86_64-rpms,satellite-maintenance-6.16-for-rhel-9-x86_64-rpms
+        state: enabled
+      when: sat_version == "6.16" and base_os == "rhel9"
+
     - name: Updating the server
       ansible.builtin.yum:
         name: '*'
@@ -263,7 +275,7 @@
         satellite_installer_options:
           - '--foreman-initial-organization "{{ sat_org }}"'
           - '--foreman-initial-admin-password {{ sat_pass }}'
-      when: sat_version == "6.8" or sat_version == "6.9" or sat_version == "6.10" or sat_version == "6.11" or sat_version == "6.12" or sat_version == "6.13" or sat_version == "6.14" or sat_version == "6.15" 
+      when: sat_version == "6.8" or sat_version == "6.9" or sat_version == "6.10" or sat_version == "6.11" or sat_version == "6.12" or sat_version == "6.13" or sat_version == "6.14" or sat_version == "6.15" or sat_version == "6.16"
 
 
     # Importing the manifest
