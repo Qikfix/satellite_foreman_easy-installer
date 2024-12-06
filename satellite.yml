@@ -305,13 +305,14 @@
         satellite_username: "{{ sat_user }}"
         satellite_password: "{{ sat_pass }}"
         satellite_products:
-          - name: Red Hat Enterprise Linux Server
-            repository_sets:
-              - name: Red Hat Enterprise Linux 7 Server (RPMs)
-                basearch: x86_64
-                releasever: 7Server
-              - name: Red Hat Satellite Tools 6.10 (for RHEL 7 Server) (RPMs)
-                basearch: x86_64
+          # - name: Red Hat Enterprise Linux Server
+          #   repository_sets:
+          #     - name: Red Hat Enterprise Linux 7 Server (RPMs)
+          #       basearch: x86_64
+          #       releasever: 7Server
+          #     # - name: Red Hat Satellite Tools 6.10 (for RHEL 7 Server) (RPMs)
+          #     - name: Red Hat Satellite Client 6 (for RHEL 7 Server) (RPMs)
+          #       basearch: x86_64
                 
           - name: Red Hat Enterprise Linux for x86_64
             repository_sets:
@@ -319,24 +320,28 @@
                 releasever: 8
               - name: Red Hat Enterprise Linux 8 for x86_64 - AppStream (RPMs)
                 releasever: 8 
-              - name: Red Hat Satellite Tools 6.10 for RHEL 8 x86_64 (RPMs)
+              # - name: Red Hat Satellite Tools 6.10 for RHEL 8 x86_64 (RPMs)
+              - name: Red Hat Satellite Client 6 for RHEL 8 x86_64 (RPMs)
       tags:
         - repos
 
     # This call will trigger the sync process and will move on
-    - name: Syncronizing repos via hammer "--async"
-      ansible.builtin.command: bash -c 'for b in $(hammer --csv --no-headers repository list | cut -d, -f1); do echo - $b; hammer repository synchronize --id $b --async; done'
-      tags:
-        - repos
+
+    # - name: Syncronizing repos via hammer "--async"
+    #   ansible.builtin.command: bash -c 'for b in $(hammer --csv --no-headers repository list | cut -d, -f1); do echo - $b; hammer repository synchronize --id $b --async; done'
+    #   tags:
+    #     - repos
 
     #  The call below doesn't have any "--async" feature at this moment. Keeping it commented until we get this feature done.
-    # - name: "Repo Sync - Red Hat Enterprise Linux for x86_64"
-    #   redhat.satellite.repository_sync:
-    #     username: "{{ sat_user }}"
-    #     password: "{{ sat_pass }}"
-    #     server_url: "https://{{ ansible_facts['nodename'] }}"
-    #     organization: "{{ sat_org }}"
-    #     product: "Red Hat Enterprise Linux for x86_64"
+    - name: "Repo Sync - Red Hat Enterprise Linux for x86_64"
+      redhat.satellite.repository_sync:
+        username: "{{ sat_user }}"
+        password: "{{ sat_pass }}"
+        server_url: "https://{{ ansible_facts['nodename'] }}"
+        organization: "{{ sat_org }}"
+        product: "Red Hat Enterprise Linux for x86_64"
+      tags:
+        - repos
 
     # - name: "Repo Sync - Red Hat Enterprise Linux"
     #   redhat.satellite.repository_sync:
@@ -345,6 +350,118 @@
     #     server_url: "https://{{ ansible_facts['nodename'] }}"
     #     organization: "{{ sat_org }}"
     #     product: "Red Hat Enterprise Linux Server"
+    #   tags:
+    #     - repos
+
+    # Creating a Sync Plan
+    - import_role:
+        name: redhat.satellite.sync_plans
+      vars:
+        satellite_organization: "{{ sat_org }}"
+        satellite_server_url: "https://{{ ansible_facts['nodename'] }}"
+        satellite_username: "{{ sat_user }}"
+        satellite_password: "{{ sat_pass }}"
+        satellite_sync_plans:
+          - name: Daily Sync
+            interval: daily
+            # sync_date: 2020-11-07 00:00:00 UTC
+            sync_date: 2020-11-07 03:00:00 PDT
+            products:
+              # - Red Hat Enterprise Linux Server
+              - Red Hat Enterprise Linux for x86_64
+      tags:
+        - sync-plan
+
+
+    # Creating the Lifecycle Environemnt
+    - import_role:
+        name: redhat.satellite.lifecycle_environments
+      vars:
+        satellite_organization: "{{ sat_org }}"
+        satellite_server_url: "https://{{ ansible_facts['nodename'] }}"
+        satellite_username: "{{ sat_user }}"
+        satellite_password: "{{ sat_pass }}"
+        satellite_lifecycle_environments:
+          - name: "Dev"
+            prior: "Library"
+          - name: "QA"
+            prior: "Dev"
+          - name: "Prod"
+            prior: "QA"
+      tags:
+        - lifecycle
+
+    # Creating the content view & composite content view
+    - import_role:
+        name: redhat.satellite.content_views
+      vars:
+        satellite_organization: "{{ sat_org }}"
+        satellite_server_url: "https://{{ ansible_facts['nodename'] }}"
+        satellite_username: "{{ sat_user }}"
+        satellite_password: "{{ sat_pass }}"
+        satellite_content_views:
+          - name: cv_rhel8
+            repositories:
+              - name: Red Hat Enterprise Linux 8 for x86_64 - BaseOS RPMs 8
+                product: 'Red Hat Enterprise Linux for x86_64'
+              - name: Red Hat Enterprise Linux 8 for x86_64 - AppStream RPMs 8
+                product: 'Red Hat Enterprise Linux for x86_64'
+              - name: Red Hat Satellite Client 6 for RHEL 8 x86_64 RPMs
+                product: 'Red Hat Enterprise Linux for x86_64'
+          - name: ccv_acme_rhel8
+            auto_publish: true
+            components:
+              - content_view: cv_rhel8
+                latest: true
+      tags:
+        - content-view
+
+
+    # Publishing CV and CCV
+    - import_role:
+        name: redhat.satellite.content_view_publish
+      vars:
+        satellite_organization: "{{ sat_org }}"
+        satellite_server_url: "https://{{ ansible_facts['nodename'] }}"
+        satellite_username: "{{ sat_user }}"
+        satellite_password: "{{ sat_pass }}"
+        satellite_content_views:
+          - cv_rhel8
+      tags:
+        - publish
+
+    # Waiting for the sync task to finish, let's add here ~ 30 min
+    - name: Pause for 5 minutes
+      ansible.builtin.pause:
+        minutes: 5
+
+    - import_role:
+        name: redhat.satellite.content_view_publish
+      vars:
+        satellite_organization: "{{ sat_org }}"
+        satellite_server_url: "https://{{ ansible_facts['nodename'] }}"
+        satellite_username: "{{ sat_user }}"
+        satellite_password: "{{ sat_pass }}"
+        satellite_content_views:
+          - ccv_acme_rhel8
+      tags:
+        - publish
+
+
+    # Promoting the CCV to Dev/QA/Prod
+    - name: "Ensure content view gets promoted to Dev/QA/Prod"
+      redhat.satellite.content_view_version:
+        organization: "{{ sat_org }}"
+        server_url: "https://{{ ansible_facts['nodename'] }}"
+        username: "{{ sat_user }}"
+        password: "{{ sat_pass }}"
+        content_view: "ccv_acme_rhel8"
+        lifecycle_environments:
+          - Dev
+          - QA
+          - Prod
+      tags:
+        - promote
 
     # Activation Key actions
     - import_role:
@@ -356,5 +473,8 @@
         satellite_password: "{{ sat_pass }}"
         satellite_activation_keys:
           - name: "ak_rhel"
+          - name: "ak_prod_rhel8"
+            lifecycle_environment: "Prod"
+            content_view: "ccv_acme_rhel8"
       tags:
         - ak
