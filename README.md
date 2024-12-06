@@ -169,32 +169,47 @@ Ok, at this moment, the server that will be pushing all the packages and command
     Here you can see an example, add the ip address according to your target server
     ```
     # cat inventory.yml 
-    [satellite01]
-    10.10.10.20
+    [foreman01]
+    10.8.30.148
 
     [sat65]
-    wallsat65.local.net
+    wallsat65.king.lab
 
     [sat66]
-    wallsat66.local.net
+    wallsat66.king.lab
 
     [sat67]
-    wallsat67.local.net
+    wallsat67.king.lab
 
     [sat68]
-    wallsat68.local.net
+    wallsat68.king.lab
 
     [sat69]
-    wallsat69.local.net
+    wallsat69.king.lab
 
     [sat610]
-    wallsat610.local.net
+    wallsat610.king.lab
 
     [sat611-rhel7]
-    wallsat611-rhel7.local.net
+    wallsat611-rhel7.king.lab
 
     [sat611-rhel8]
-    wallsat611-rhel8.local.net
+    wallsat611-rhel8.king.lab
+
+    [sat612]
+    wallsat612.king.lab
+
+    [sat613]
+    wallsat613.king.lab
+
+    [sat614]
+    wallsat614.king.lab
+
+    [sat615]
+    wallsat615.king.lab
+
+    [sat616]
+    wallsat616.king.lab
     ```
 
 - Copy your pub-key to the external server
