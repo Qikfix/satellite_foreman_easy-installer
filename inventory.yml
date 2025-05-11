@@ -1,5 +1,5 @@
 [foreman01]
-10.8.30.148
+foreman.king.lab
 
 [sat65]
 wallsat65.king.lab
@@ -36,6 +36,13 @@ wallsat614.king.lab
 
 [sat615]
 wallsat615.king.lab
+# wallsat615.king.lab ansible_python_interpreter=/usr/bin/python3
 
-[sat616]
-wallsat616.king.lab
+[sat616-rhel8]
+wallsat616-rhel8.king.lab
+
+[sat616-rhel9]
+wallsat616-rhel9.king.lab
+
+[sat617]
+wallsat617.king.lab
