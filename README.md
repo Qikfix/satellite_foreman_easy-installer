@@ -320,15 +320,20 @@ Ok, at this moment, the server that will be pushing all the packages and command
 
     - Satellite 6.16 over RHEL8
     ```
-    $ ansible-playbook -i inventory.yml -e "rhsm_username=your_portal_user_here" -e "rhsm_password=your_portal_password_here" -e "server_group=sat616" -e "sat_version=6.16" -e "manifest_path=/path/to/the/manifest.zip" -e "base_os=rhel8" satellite.yml    
+    $ ansible-playbook -i inventory.yml -e "rhsm_username=your_portal_user_here" -e "rhsm_password=your_portal_password_here" -e "server_group=sat616-rhel8" -e "sat_version=6.16" -e "manifest_path=/path/to/the/manifest.zip" -e "base_os=rhel8" satellite.yml    
     ```
 
     - Satellite 6.16 over RHEL9
     ```
-    $ ansible-playbook -i inventory.yml -e "rhsm_username=your_portal_user_here" -e "rhsm_password=your_portal_password_here" -e "server_group=sat616" -e "sat_version=6.16" -e "manifest_path=/path/to/the/manifest.zip" -e "base_os=rhel9" satellite.yml
+    $ ansible-playbook -i inventory.yml -e "rhsm_username=your_portal_user_here" -e "rhsm_password=your_portal_password_here" -e "server_group=sat616-rhel9" -e "sat_version=6.16" -e "manifest_path=/path/to/the/manifest.zip" -e "base_os=rhel9" satellite.yml
     ```
 
-    Note. `base_os="rhel7"` will be the standard value. It will be necessary to pass it only when installing Satellite over `RHEL8`.
+    - Satellite 6.17 over RHEL9
+    ```
+    $ ansible-playbook -i inventory.yml -e "rhsm_username=your_portal_user_here" -e "rhsm_password=your_portal_password_here" -e "server_group=sat617" -e "sat_version=6.17" -e "manifest_path=/path/to/the/manifest.zip" -e "base_os=rhel9" satellite.yml
+    ```
+
+    Note. `base_os="rhel9"` will be the standard value.
 
 
     Ps.: Soon I'll be adding the information presenting how to use vault feature.
